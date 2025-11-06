@@ -1,6 +1,7 @@
 package ku.restaurant.service;
 
 
+import jakarta.persistence.EntityExistsException;
 import ku.restaurant.dto.SignupRequest;
 import ku.restaurant.entity.User;
 import ku.restaurant.repository.UserRepository;
@@ -33,6 +34,10 @@ public class UserService {
 
 
     public void createUser(SignupRequest request) {
+        if (userExists(request.getUsername())) {
+            throw new EntityExistsException("Username '" + request.getUsername() + "' is already taken");
+        }
+        
         User dao = new User();
         dao.setUsername(request.getUsername());
         dao.setPassword(encoder.encode(request.getPassword()));

@@ -56,8 +56,6 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<String> registerUser(@Valid @RequestBody SignupRequest request) {
-        if (userService.userExists(request.getUsername()))
-            return new ResponseEntity<>("Error: Username is already taken!", HttpStatus.BAD_REQUEST);
         userService.createUser(request);
         return ResponseEntity.ok("User registered successfully!");
     }
