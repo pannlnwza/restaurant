@@ -1,11 +1,14 @@
 package ku.restaurant.security;
 
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ku.restaurant.service.CustomUserDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +23,7 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     @Autowired
     private JwtUtil jwtUtils;
@@ -36,11 +40,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String jwt = null;
 
         try {
-            String jwt = null;
-
-
             // Get authorization header and validate
             final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -55,6 +57,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 String username = jwtUtils.getUsernameFromToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                
+                // Log user roles for authorization tracking
+                logger.info("User '{}' authenticated with roles: {}", username, userDetails.getAuthorities());
+                
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -66,9 +72,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext()
                         .setAuthentication(auth);
             }
-            filterChain.doFilter(request, response);
+        } catch (JwtException e) {
+            logger.error("JWT validation error: {}", e.getMessage());
         } catch (Exception e) {
-            System.out.println("Cannot set user authentication: " + e);
+            logger.error("Cannot set user authentication: ", e);
         }
+        
+        filterChain.doFilter(request, response);
     }
 }
