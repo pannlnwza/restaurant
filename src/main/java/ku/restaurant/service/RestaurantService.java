@@ -1,5 +1,6 @@
 package ku.restaurant.service;
 
+import ku.restaurant.dto.RestaurantRequest;
 import ku.restaurant.entity.Restaurant;
 import ku.restaurant.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,12 @@ public class RestaurantService {
         return repository.findAll();
     }
 
-    public Restaurant create(Restaurant restaurant) {
+    public Restaurant create(RestaurantRequest request) {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName(request.getName());
+        restaurant.setRating(request.getRating());
+        restaurant.setLocation(request.getLocation());
+
         restaurant.setCreatedAt(Instant.now());
         Restaurant record = repository.save(restaurant);
         return record;
