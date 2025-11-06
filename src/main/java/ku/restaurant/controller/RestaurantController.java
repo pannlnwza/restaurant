@@ -1,9 +1,14 @@
 package ku.restaurant.controller;
 
+import jakarta.validation.Valid;
 import ku.restaurant.dto.RestaurantRequest;
 import ku.restaurant.entity.Restaurant;
 import ku.restaurant.service.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,12 +26,21 @@ public class RestaurantController {
     }
 
     @GetMapping("/restaurants")
-    public List<Restaurant> getAllRestaurants() {
-        return service.getAll();
+    public Page<Restaurant> getAllRestaurants(
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+            @RequestParam(value = "sortBy", required = false) String sortBy) {
+        if(null == offset) offset = 0;
+        if(null == pageSize) pageSize = 10;
+        if(StringUtils.isEmpty(sortBy)) sortBy ="name";
+
+
+        return service.getRestaurantsPage(PageRequest.of(offset, pageSize, Sort.by(sortBy)));
     }
 
+
     @PostMapping("/restaurants")
-    public Restaurant create(@RequestBody RestaurantRequest restaurant) {
+    public Restaurant create(@Valid @RequestBody RestaurantRequest restaurant) {
         return service.create(restaurant);
     }
 
