@@ -32,6 +32,9 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 
     public void createUser(SignupRequest request) {
         if (userExists(request.getUsername())) {
